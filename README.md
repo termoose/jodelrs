@@ -1,0 +1,5 @@
+# jodelrs
+
+```
+cargo test
+```
