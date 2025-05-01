@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn test_compute_sha1hmac() {
-        let input = r#"GET%api.jodelapis.com%443%/api/v3/user/recommendedChannels%25027287-ee291561-948ba51f-b6a6-4b11-a02d-ac7639650fe9%%2024-07-11T19:16:12.100Z%home%false%"#;
+        let input = "GET%api.jodelapis.com%443%/api/v3/user/recommendedChannels%25027287-ee291561-948ba51f-b6a6-4b11-a02d-ac7639650fe9%%2024-07-11T19:16:12.100Z%home%false%";
         let wants = "5c411f124d9bf438c3cb5e66a00c3d2aa1c66e87";
         let output = sha1hmac(input);
 
