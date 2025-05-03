@@ -41,13 +41,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_create_empty() {
+    fn create_empty_query_param_list() {
         let q = Params::empty();
         assert_eq!(q.encode("whatever", "something"), "");
     }
 
     #[test]
-    fn test_encode() {
+    fn encode_in_different_ways() {
         let q = Params::new([("first", "value1"), ("second", "value2")]);
 
         assert_eq!(q.encode("=", "%"), "first=value1%second=value2");
@@ -55,7 +55,7 @@ mod tests {
     }
 
     #[test]
-    fn test_add() {
+    fn add_additional_query_params() {
         let mut q = Params::new([("first", "value1")]);
         q.add("second", "value2");
 
