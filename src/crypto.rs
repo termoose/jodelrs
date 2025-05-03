@@ -16,12 +16,12 @@ fn sha1hmac(data: &str) -> String {
 }
 
 fn compute_signature(
-    token: &str,
+    token: Option<&str>,
     method: http::Method,
     uri: &str,
     timestamp: DateTime<FixedOffset>,
     params: QueryParams,
-    body: &str,
+    body: Option<&str>,
 ) -> Result<String, ParseError> {
     let parsed = Url::parse(uri)?;
     let query_params = params.encode("%", "%");
@@ -31,10 +31,10 @@ fn compute_signature(
         method.as_str(),
         parsed.host_str().unwrap(),
         parsed.path(),
-        token,
+        token.unwrap_or(""),
         timestamp.to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
         query_params,
-        body
+        body.unwrap_or("")
     )))
 }
 
@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn test_compute_signature() {
-        let auth = "25027287-ee291561-948ba51f-b6a6-4b11-a02d-ac7639650fe9";
+        let token = "25027287-ee291561-948ba51f-b6a6-4b11-a02d-ac7639650fe9";
         let method = http::Method::GET;
         let url = "https://api.jodelapis.com/api/v3/posts/location/combo";
         let timestamp = "2024-07-12T09:23:07.308Z";
@@ -65,16 +65,15 @@ mod tests {
             ("skipHometown", "false"),
             ("stickies", "true"),
         ]);
-        let data = "";
 
         let wants = "19c552f785e54408a6d1b84d81ba87171f2c3cb3";
         let signature = compute_signature(
-            auth,
+            Some(token),
             method,
             url,
             DateTime::parse_from_rfc3339(timestamp).unwrap(),
             params,
-            data,
+            None,
         );
 
         assert_eq!(wants, signature.unwrap());
