@@ -1,4 +1,4 @@
-use crate::query::QueryParams;
+use crate::query;
 
 use chrono::{DateTime, FixedOffset};
 use hex;
@@ -20,7 +20,7 @@ fn compute_signature(
     method: http::Method,
     uri: &str,
     timestamp: DateTime<FixedOffset>,
-    params: QueryParams,
+    params: query::Params,
     body: Option<&str>,
 ) -> Result<String, ParseError> {
     let parsed = Url::parse(uri)?;
@@ -57,7 +57,7 @@ mod tests {
         let method = http::Method::GET;
         let url = "https://api.jodelapis.com/api/v3/posts/location/combo";
         let timestamp = "2024-07-12T09:23:07.308Z";
-        let params = QueryParams::new([
+        let params = query::Params::new([
             ("channels", "true"),
             ("home", "false"),
             ("lat", "59.91"),

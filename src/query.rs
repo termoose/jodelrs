@@ -1,19 +1,19 @@
 use std::collections::BTreeMap;
 
-pub struct QueryParams {
+pub struct Params {
     // The `BTreeMap` ensures the query parameters are always sorted
     params: BTreeMap<String, String>,
 }
 
-impl QueryParams {
+impl Params {
     pub fn empty() -> Self {
-        QueryParams {
+        Params {
             params: BTreeMap::new(),
         }
     }
 
     pub fn new<const N: usize>(params: [(&str, &str); N]) -> Self {
-        QueryParams {
+        Params {
             params: params
                 .iter()
                 .map(|(k, v)| (k.to_string(), v.to_string()))
@@ -42,13 +42,13 @@ mod tests {
 
     #[test]
     fn test_create_empty() {
-        let q = QueryParams::empty();
+        let q = Params::empty();
         assert_eq!(q.encode("whatever", "something"), "");
     }
 
     #[test]
     fn test_encode() {
-        let q = QueryParams::new([("first", "value1"), ("second", "value2")]);
+        let q = Params::new([("first", "value1"), ("second", "value2")]);
 
         assert_eq!(q.encode("=", "%"), "first=value1%second=value2");
         assert_eq!(q.encode("%", "%"), "first%value1%second%value2");
@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn test_add() {
-        let mut q = QueryParams::new([("first", "value1")]);
+        let mut q = Params::new([("first", "value1")]);
         q.add("second", "value2");
 
         assert_eq!(q.encode("=", "%"), "first=value1%second=value2");
