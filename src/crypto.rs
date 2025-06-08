@@ -15,7 +15,7 @@ fn sha1hmac(data: &str) -> String {
     hex::encode(mac.finalize().into_bytes())
 }
 
-fn compute_signature(
+pub fn compute_signature(
     token: Option<&str>,
     method: http::Method,
     uri: &str,

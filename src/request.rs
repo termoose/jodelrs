@@ -1,9 +1,22 @@
-use crate::constants;
-use serde::Serialize;
+use crate::{
+    constants::{self, API_PATH_V2, API_SERVER, CLIENT_TYPE},
+    crypto, query,
+};
+
+use chrono::{FixedOffset, Utc};
+use http::{HeaderMap, HeaderValue, Response};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize)]
+struct TokenData {
+    access_token: String,
+    refresh_token: String,
+    expiration_date: i64,
+}
 
 pub struct Request {
     client: reqwest::Client,
-    token: Option<String>,
+    token: Option<TokenData>,
 }
 
 #[derive(Debug, Serialize)]
@@ -47,6 +60,10 @@ impl AccessTokenBody {
             },
         }
     }
+
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }
 }
 
 impl Request {
@@ -57,17 +74,72 @@ impl Request {
         }
     }
 
-    pub fn refresh_token() {}
+    pub async fn refresh_token(&mut self) -> Result<TokenData, reqwest::Error> {
+        let uri = API_SERVER.to_owned() + API_PATH_V2 + "users/";
+        let body = AccessTokenBody::create(59.91, 10.79);
+        let timestamp = Utc::now().fixed_offset();
+        let signature = crypto::compute_signature(
+            None,
+            http::Method::POST,
+            &uri,
+            timestamp,
+            query::Params::empty(),
+            Some(&body.to_json()),
+        );
+
+        let mut headers = HeaderMap::new();
+        headers.insert("Accept", HeaderValue::from_static("application/json"));
+        headers.insert("X-Client-Type", HeaderValue::from_static(CLIENT_TYPE));
+        headers.insert("X-Api-Version", HeaderValue::from_static("0.2"));
+        headers.insert(
+            "X-Timestamp",
+            HeaderValue::from_str(&timestamp.to_rfc3339_opts(chrono::SecondsFormat::Millis, true))
+                .unwrap(),
+        );
+        headers.insert(
+            "X-Authorization",
+            HeaderValue::from_str(&("HMAC ".to_owned() + &signature.unwrap())).unwrap(),
+        );
+        headers.insert(
+            "Content-Type",
+            HeaderValue::from_static("application/json; charset=UTF-8"),
+        );
+
+        let response: TokenData = self
+            .client
+            .post(uri)
+            .headers(headers)
+            .json(&body)
+            .send()
+            .await?
+            .json()
+            .await?;
+
+        // eprintln!("token: {:?}", &response);
+
+        // self.token = Some(response);
+
+        Ok(response)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    #[tokio::test]
+    async fn check_token_refresh() {
+        let mut req = Request::new();
+        assert!(req.token.is_none());
+
+        let body = req.refresh_token();
+        eprintln!("body: {:?}", body.await.unwrap());
+        assert!(req.token.is_some());
+    }
+
     #[test]
     fn verify_token_req_body() {
-        let body = AccessTokenBody::create(59.91, 10.79);
-        let body_str = serde_json::to_string(&body).unwrap();
+        let body_str = AccessTokenBody::create(59.91, 10.79).to_json();
         let wants = r#"{"language":"de-DE","client_id":"81e8a76e-1e02-4d17-9ba0-8a7020261b26","device_uid":"735d74003db1ce22358056ffbc8c4bb01a6008dcdfc24cf441ff1881938bd5a6","firebase_uid":"D0OQWsXcD2OdgsRyKgkdXyiiPBh2","firebaseJWT":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjNmOWEwNTBkYzRhZTgyOGMyODcxYzMyNTYzYzk5ZDUwMjc3ODRiZTUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vdGVsbG0tYW5kcm9pZCIsImF1ZCI6InRlbGxtLWFuZHJvaWQiLCJhdXRoX3RpbWUiOjE3NDYyOTc2MDQsInVzZXJfaWQiOiJEME9RV3NYY0QyT2Rnc1J5S2drZFh5aWlQQmgyIiwic3ViIjoiRDBPUVdzWGNEMk9kZ3NSeUtna2RYeWlpUEJoMiIsImlhdCI6MTc0NjI5NzYwNSwiZXhwIjoxNzQ2MzAxMjA1LCJlbWFpbCI6ImNvbGQubW9vbjEzNDVAYmlya2VkLmFsIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiY29sZC5tb29uMTM0NUBiaXJrZWQuYWwiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.K2xVLdARjSw1hSPHhI9Cqt9tvvRHoHxiKufVsnLB0fZSqi9wQTeJ2B8X6b2HlbtQ2YQosyNntzLDyHQgr8flH1tfckbnEIb_C9wO2YaGXTFCZKfpysMJLzv7TuO1nVhe0ORr4pfsCq6ICRUP7AnW-Jd7WdnCMaZWckLp1MIQoPegrim6nkIaiuzVG-nkwIITBb9_gBGDaOTSD5ALroWDDILBT1mxl8yI-PNVR429UsLyDYuOTeNHAhL84vmgYpW7oiSeBBDkXHmDixXxsbLN3q2fkfc7QWHyK7IiPv_ekIMVrtLreswkAs7h0uLeeXFF5x9edzbi3Sw1QzwnIgMEmg","location":{"city":"","country":"DE","loc_accuracy":10.56,"loc_coordinates":{"lat":59.91,"lng":10.79}}}"#;
 
         assert_eq!(wants, body_str);
