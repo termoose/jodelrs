@@ -3,6 +3,7 @@ use crate::{
     crypto, query,
 };
 
+use anyhow::Result;
 use chrono::{FixedOffset, Utc};
 use http::{HeaderMap, HeaderValue, Response};
 use serde::{Deserialize, Serialize};
@@ -74,7 +75,7 @@ impl Request {
         }
     }
 
-    pub async fn refresh_token(&mut self) -> Result<TokenData, reqwest::Error> {
+    async fn refresh_token(&mut self) -> Result<TokenData> {
         let uri = API_SERVER.to_owned() + API_PATH_V2 + "users/";
         let body = AccessTokenBody::create(59.91, 10.79);
         let timestamp = Utc::now().fixed_offset();
@@ -85,39 +86,28 @@ impl Request {
             timestamp,
             query::Params::empty(),
             Some(&body.to_json()),
-        );
+        )?;
 
-        let mut headers = HeaderMap::new();
-        headers.insert("Accept", HeaderValue::from_static("application/json"));
-        headers.insert("X-Client-Type", HeaderValue::from_static(CLIENT_TYPE));
-        headers.insert("X-Api-Version", HeaderValue::from_static("0.2"));
-        headers.insert(
+        let mut headers = query::Params::empty();
+        headers.add("Accept", "application/json");
+        headers.add("X-Client-Type", CLIENT_TYPE);
+        headers.add("X-Api-Version", "0.2");
+        headers.add(
             "X-Timestamp",
-            HeaderValue::from_str(&timestamp.to_rfc3339_opts(chrono::SecondsFormat::Millis, true))
-                .unwrap(),
+            &timestamp.to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
         );
-        headers.insert(
-            "X-Authorization",
-            HeaderValue::from_str(&("HMAC ".to_owned() + &signature.unwrap())).unwrap(),
-        );
-        headers.insert(
-            "Content-Type",
-            HeaderValue::from_static("application/json; charset=UTF-8"),
-        );
+        headers.add("X-Authorization", &format!("HMAC {}", signature));
+        headers.add("Content-Type", "application/json; charset=UTF-8");
 
         let response: TokenData = self
             .client
             .post(uri)
-            .headers(headers)
+            .headers(headers.into())
             .json(&body)
             .send()
             .await?
             .json()
             .await?;
-
-        // eprintln!("token: {:?}", &response);
-
-        // self.token = Some(response);
 
         Ok(response)
     }

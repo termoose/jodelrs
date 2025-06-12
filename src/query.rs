@@ -1,8 +1,23 @@
-use std::collections::BTreeMap;
+use http::{HeaderMap, HeaderName, HeaderValue};
+use std::{collections::BTreeMap, str::FromStr};
 
 pub struct Params {
     // The `BTreeMap` ensures the query parameters are always sorted
     params: BTreeMap<String, String>,
+}
+
+impl Into<HeaderMap> for Params {
+    fn into(self) -> HeaderMap {
+        self.params
+            .iter()
+            .map(|(k, v)| {
+                (
+                    HeaderName::from_str(k).unwrap(),
+                    HeaderValue::from_str(v).unwrap(),
+                )
+            })
+            .collect()
+    }
 }
 
 impl Params {
@@ -61,5 +76,18 @@ mod tests {
 
         assert_eq!(q.encode("=", "%"), "first=value1%second=value2");
         assert_eq!(q.encode("%", "%"), "first%value1%second%value2");
+    }
+
+    #[test]
+    fn convert_to_headers() {
+        let headers: HeaderMap = Params::new([("first", "value1"), ("second", "value2")]).into();
+        assert_eq!(
+            headers.get("first"),
+            Some(&HeaderValue::from_static("value1"))
+        );
+        assert_eq!(
+            headers.get("second"),
+            Some(&HeaderValue::from_static("value2"))
+        );
     }
 }

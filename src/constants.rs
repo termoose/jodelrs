@@ -1,8 +1,8 @@
-const CLIENT_ID: &str = "secret";
-const CLIENT_TYPE: &str = "android_8.62.2";
-const DEVICE_UID: &str = "secret";
-const FIREBASE_UID: &str = "secret";
-const FIREBASE_JWT: &str = "secret";
-const API_SERVER: &str = "https://api.jodelapis.com/api/";
-const API_PATH_V2: &str = "v2/";
-const API_PATH_V3: &str = "v3/";
+pub const CLIENT_ID: &str = "81e8a76e-1e02-4d17-9ba0-8a7020261b26";
+pub const CLIENT_TYPE: &str = "android_8.62.2";
+pub const DEVICE_UID: &str = "735d74003db1ce22358056ffbc8c4bb01a6008dcdfc24cf441ff1881938bd5a6";
+pub const FIREBASE_UID: &str = "D0OQWsXcD2OdgsRyKgkdXyiiPBh2";
+pub const FIREBASE_JWT: &str = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNmOWEwNTBkYzRhZTgyOGMyODcxYzMyNTYzYzk5ZDUwMjc3ODRiZTUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vdGVsbG0tYW5kcm9pZCIsImF1ZCI6InRlbGxtLWFuZHJvaWQiLCJhdXRoX3RpbWUiOjE3NDYyOTc2MDQsInVzZXJfaWQiOiJEME9RV3NYY0QyT2Rnc1J5S2drZFh5aWlQQmgyIiwic3ViIjoiRDBPUVdzWGNEMk9kZ3NSeUtna2RYeWlpUEJoMiIsImlhdCI6MTc0NjI5NzYwNSwiZXhwIjoxNzQ2MzAxMjA1LCJlbWFpbCI6ImNvbGQubW9vbjEzNDVAYmlya2VkLmFsIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsiY29sZC5tb29uMTM0NUBiaXJrZWQuYWwiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.K2xVLdARjSw1hSPHhI9Cqt9tvvRHoHxiKufVsnLB0fZSqi9wQTeJ2B8X6b2HlbtQ2YQosyNntzLDyHQgr8flH1tfckbnEIb_C9wO2YaGXTFCZKfpysMJLzv7TuO1nVhe0ORr4pfsCq6ICRUP7AnW-Jd7WdnCMaZWckLp1MIQoPegrim6nkIaiuzVG-nkwIITBb9_gBGDaOTSD5ALroWDDILBT1mxl8yI-PNVR429UsLyDYuOTeNHAhL84vmgYpW7oiSeBBDkXHmDixXxsbLN3q2fkfc7QWHyK7IiPv_ekIMVrtLreswkAs7h0uLeeXFF5x9edzbi3Sw1QzwnIgMEmg";
+pub const API_SERVER: &str = "https://api.jodelapis.com/api/";
+pub const API_PATH_V2: &str = "v2/";
+pub const API_PATH_V3: &str = "v3/";
