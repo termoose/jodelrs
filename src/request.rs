@@ -122,9 +122,8 @@ mod tests {
         let mut req = Request::new();
         assert!(req.token.is_none());
 
-        let body = req.refresh_token();
-        eprintln!("body: {:?}", body.await.unwrap());
-        assert!(req.token.is_some());
+        let body = req.refresh_token().await.unwrap();
+        assert!(!body.access_token.is_empty());
     }
 
     #[test]
